@@ -4,6 +4,31 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Button } from './components/Button';
 import { Dropdown } from './components/Dropdown';
+import { useAuth } from './context/AuthContext';
+import { useRouter } from 'next/navigation';
+
+function AuthButton() {
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  const handleClick = () => {
+    if (isAuthenticated) {
+      router.push('/browse');
+    } else {
+      router.push('/register');
+    }
+  };
+
+  return (
+    <Button 
+      variant="accent" 
+      className="w-full"
+      onClick={handleClick}
+    >
+      Find Clinics
+    </Button>
+  );
+}
 
 export default function HomePage() {
   const [selectedArea, setSelectedArea] = useState('');
@@ -65,11 +90,7 @@ export default function HomePage() {
                 value={selectedSpecialization}
                 onChange={(e) => setSelectedSpecialization(e.target.value)}
               />
-              <Link href="/browse" className="w-full">
-                <Button variant="accent" className="w-full">
-                  Find Clinics
-                </Button>
-              </Link>
+              <AuthButton />
             </div>
           </div>
         </div>

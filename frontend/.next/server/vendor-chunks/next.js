@@ -10,6 +10,17 @@ exports.id = "vendor-chunks/next";
 exports.ids = ["vendor-chunks/next"];
 exports.modules = {
 
+/***/ "(ssr)/./node_modules/next/dist/api/navigation.js":
+/*!**************************************************!*\
+  !*** ./node_modules/next/dist/api/navigation.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _client_components_navigation__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../client/components/navigation */ \"(ssr)/./node_modules/next/dist/client/components/navigation.js\");\n/* harmony import */ var _client_components_navigation__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_client_components_navigation__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony reexport (unknown) */ var __WEBPACK_REEXPORT_OBJECT__ = {};\n/* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _client_components_navigation__WEBPACK_IMPORTED_MODULE_0__) if(__WEBPACK_IMPORT_KEY__ !== \"default\") __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _client_components_navigation__WEBPACK_IMPORTED_MODULE_0__[__WEBPACK_IMPORT_KEY__]\n/* harmony reexport (unknown) */ __webpack_require__.d(__webpack_exports__, __WEBPACK_REEXPORT_OBJECT__);\n\n\n//# sourceMappingURL=navigation.js.map//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHNzcikvLi9ub2RlX21vZHVsZXMvbmV4dC9kaXN0L2FwaS9uYXZpZ2F0aW9uLmpzIiwibWFwcGluZ3MiOiI7Ozs7OztBQUFnRDs7QUFFaEQiLCJzb3VyY2VzIjpbIkM6XFxGU1dELW1pbmktcHJvamVjdC0yMVxcRlNXRC1taW5pLXByb2plY3RcXGZyb250ZW5kXFxub2RlX21vZHVsZXNcXG5leHRcXGRpc3RcXGFwaVxcbmF2aWdhdGlvbi5qcyJdLCJzb3VyY2VzQ29udGVudCI6WyJleHBvcnQgKiBmcm9tICcuLi9jbGllbnQvY29tcG9uZW50cy9uYXZpZ2F0aW9uJztcblxuLy8jIHNvdXJjZU1hcHBpbmdVUkw9bmF2aWdhdGlvbi5qcy5tYXAiXSwibmFtZXMiOltdLCJpZ25vcmVMaXN0IjpbMF0sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///(ssr)/./node_modules/next/dist/api/navigation.js\n");
+
+/***/ }),
+
 /***/ "(ssr)/./node_modules/next/dist/client/add-base-path.js":
 /*!********************************************************!*\
   !*** ./node_modules/next/dist/client/add-base-path.js ***!
@@ -1785,19 +1796,6 @@ eval("\nObject.defineProperty(exports, \"__esModule\", ({\n    value: true\n}));
 
 "use strict";
 eval("/* eslint-disable import/no-extraneous-dependencies */ \nObject.defineProperty(exports, \"__esModule\", ({\n    value: true\n}));\nObject.defineProperty(exports, \"createProxy\", ({\n    enumerable: true,\n    get: function() {\n        return createProxy;\n    }\n}));\nconst _serveredge = __webpack_require__(/*! react-server-dom-webpack/server.edge */ \"(rsc)/./node_modules/next/dist/server/route-modules/app-page/vendored/rsc/react-server-dom-webpack-server-edge.js\");\nconst createProxy = _serveredge.createClientModuleProxy;\n\n//# sourceMappingURL=module-proxy.js.map//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHJzYykvLi9ub2RlX21vZHVsZXMvbmV4dC9kaXN0L2J1aWxkL3dlYnBhY2svbG9hZGVycy9uZXh0LWZsaWdodC1sb2FkZXIvbW9kdWxlLXByb3h5LmpzIiwibWFwcGluZ3MiOiJBQUFBLHVEQUFvRTtBQUNwRSw4Q0FBNkM7QUFDN0M7QUFDQSxDQUFDLEVBQUM7QUFDRiwrQ0FBOEM7QUFDOUM7QUFDQTtBQUNBO0FBQ0E7QUFDQSxDQUFDLEVBQUM7QUFDRixvQkFBb0IsbUJBQU8sQ0FBQywrSkFBc0M7QUFDbEU7O0FBRUEiLCJzb3VyY2VzIjpbIkM6XFxGU1dELW1pbmktcHJvamVjdC0yMVxcRlNXRC1taW5pLXByb2plY3RcXGZyb250ZW5kXFxub2RlX21vZHVsZXNcXG5leHRcXGRpc3RcXGJ1aWxkXFx3ZWJwYWNrXFxsb2FkZXJzXFxuZXh0LWZsaWdodC1sb2FkZXJcXG1vZHVsZS1wcm94eS5qcyJdLCJzb3VyY2VzQ29udGVudCI6WyIvKiBlc2xpbnQtZGlzYWJsZSBpbXBvcnQvbm8tZXh0cmFuZW91cy1kZXBlbmRlbmNpZXMgKi8gXCJ1c2Ugc3RyaWN0XCI7XG5PYmplY3QuZGVmaW5lUHJvcGVydHkoZXhwb3J0cywgXCJfX2VzTW9kdWxlXCIsIHtcbiAgICB2YWx1ZTogdHJ1ZVxufSk7XG5PYmplY3QuZGVmaW5lUHJvcGVydHkoZXhwb3J0cywgXCJjcmVhdGVQcm94eVwiLCB7XG4gICAgZW51bWVyYWJsZTogdHJ1ZSxcbiAgICBnZXQ6IGZ1bmN0aW9uKCkge1xuICAgICAgICByZXR1cm4gY3JlYXRlUHJveHk7XG4gICAgfVxufSk7XG5jb25zdCBfc2VydmVyZWRnZSA9IHJlcXVpcmUoXCJyZWFjdC1zZXJ2ZXItZG9tLXdlYnBhY2svc2VydmVyLmVkZ2VcIik7XG5jb25zdCBjcmVhdGVQcm94eSA9IF9zZXJ2ZXJlZGdlLmNyZWF0ZUNsaWVudE1vZHVsZVByb3h5O1xuXG4vLyMgc291cmNlTWFwcGluZ1VSTD1tb2R1bGUtcHJveHkuanMubWFwIl0sIm5hbWVzIjpbXSwiaWdub3JlTGlzdCI6WzBdLCJzb3VyY2VSb290IjoiIn0=\n//# sourceURL=webpack-internal:///(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-loader/module-proxy.js\n");
-
-/***/ }),
-
-/***/ "(rsc)/./node_modules/next/dist/client/app-dir/link.js":
-/*!*******************************************************!*\
-  !*** ./node_modules/next/dist/client/app-dir/link.js ***!
-  \*******************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const { createProxy } = __webpack_require__(/*! next/dist/build/webpack/loaders/next-flight-loader/module-proxy */ "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-loader/module-proxy.js")
-
-module.exports = createProxy("C:\\FSWD-mini-project-21\\FSWD-mini-project\\frontend\\node_modules\\next\\dist\\client\\app-dir\\link.js")
-
 
 /***/ }),
 

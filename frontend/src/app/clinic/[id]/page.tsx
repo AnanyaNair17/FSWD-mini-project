@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, use } from 'react';
-import { useParams } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Star, MapPin, Clock, CheckCircle, Phone } from 'lucide-react';
 import { Button } from '../../components/Button';
@@ -9,34 +9,61 @@ import { Input } from '../../components/Input';
 import { Tag } from '../../components/Tag';
 import { QueueListItem } from '../../components/QueueListItem';
 import { mockClinics } from '../../../data/mockClinics';
+import { useAuth } from '../../context/AuthContext';
 
 export default function ClinicDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const [patientName, setPatientName] = useState('');
-  const [showTokenModal, setShowTokenModal] = useState(false);
+  const { token, isAuthenticated } = useAuth();
+  const router = useRouter();
   
   const clinic = mockClinics.find(c => c.id === id);
 
-  if (!clinic) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl text-[#1A1924] mb-4">Clinic not found</h2>
-          <Link href="/browse">
-            <Button variant="primary">Browse Clinics</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  const [patientName, setPatientName] = useState('');
+  const [showTokenModal, setShowTokenModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [tokenInfo, setTokenInfo] = useState<any>(null);
 
-  const handleJoinQueue = () => {
-    if (patientName.trim()) {
+  const handleJoinQueue = async () => {
+    if (!isAuthenticated) {
+      router.push('/register');
+      return;
+    }
+
+    if (!patientName.trim()) return;
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('http://localhost:5000/api/queue/join', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          clinicId: clinic?.id, // Assuming ID is numeric in DB
+          patientName: patientName
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to join queue');
+      }
+
+      setTokenInfo(data.entry);
       setShowTokenModal(true);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Mock queue data
+  // Mock queue data for visual consistency
   const queueItems = [
     { tokenNumber: 'A1', patientName: 'Current Patient', status: 'current' as const, estimatedTime: 'Now' },
     { tokenNumber: 'A2', status: 'waiting' as const, estimatedTime: '10 mins' },
@@ -141,6 +168,11 @@ export default function ClinicDetailPage({ params }: { params: Promise<{ id: str
 
               <div className="border-t border-[#E5E5E5] pt-6">
                 <h3 className="text-lg text-[#1A1924] mb-4">Get your token</h3>
+                {error && (
+                  <div className="p-3 mb-4 rounded-lg bg-red-50 text-red-600 text-xs border border-red-100">
+                    {error}
+                  </div>
+                )}
                 <Input
                   placeholder="Enter your name"
                   value={patientName}
@@ -151,9 +183,9 @@ export default function ClinicDetailPage({ params }: { params: Promise<{ id: str
                   variant="accent"
                   className="w-full"
                   onClick={handleJoinQueue}
-                  disabled={!patientName.trim()}
+                  disabled={!patientName.trim() || loading}
                 >
-                  Join Queue
+                  {loading ? 'Joining...' : 'Join Queue'}
                 </Button>
                 <p className="text-xs text-[#717182] mt-4 text-center font-['Outfit']">
                   You'll receive a digital token. The clinic screen will display your number.
@@ -175,18 +207,25 @@ export default function ClinicDetailPage({ params }: { params: Promise<{ id: str
                 Your token number is
               </p>
               <div className="bg-[#1A6B7C] text-white rounded-xl py-8 mb-6">
-                <p className="text-6xl">A5</p>
+                <p className="text-6xl">{tokenInfo?.tokenNumber}</p>
               </div>
               <p className="text-[#717182] mb-8 font-['Outfit']">
                 Please arrive at the clinic. Your number will be called on the screen.
               </p>
-              <Button
-                variant="primary"
-                className="w-full"
-                onClick={() => setShowTokenModal(false)}
-              >
-                Got it
-              </Button>
+              <div className="flex flex-col gap-3">
+                <Link href="/patient-dashboard" className="w-full">
+                  <Button variant="primary" className="w-full">
+                    Go to Dashboard
+                  </Button>
+                </Link>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setShowTokenModal(false)}
+                >
+                  Close
+                </Button>
+              </div>
             </div>
           </div>
         )}

@@ -1,6 +1,10 @@
 {
-  "/page": "app/page.js",
   "/browse/page": "app/browse/page.js",
+  "/(auth)/login/page": "app/(auth)/login/page.js",
+  "/staff-management/dashboard/page": "app/staff-management/dashboard/page.js",
+  "/patient-dashboard/page": "app/patient-dashboard/page.js",
   "/register-clinic/page": "app/register-clinic/page.js",
-  "/clinic/[id]/page": "app/clinic/[id]/page.js"
+  "/clinic/[id]/page": "app/clinic/[id]/page.js",
+  "/staff-login/page": "app/staff-login/page.js",
+  "/page": "app/page.js"
 }

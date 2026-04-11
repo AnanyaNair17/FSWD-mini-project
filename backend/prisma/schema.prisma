@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  output          = "./generated/prisma"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  username  String?  @unique
+  name      String?
+  password  String
+  role      String   @default("VOLUNTEER") // e.g., "VOLUNTEER", "NGO", "ADMIN", "STAFF"
+  clinic    Clinic?
+  queueEntries QueueEntry[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Clinic {
+  id             Int      @id @default(autoincrement())
+  name           String
+  doctorName     String
+  specialization String
+  address        String
+  area           String
+  phone          String
+  workingDays    String
+  openingTime    String
+  closingTime    String
+  adminId        Int?     @unique
+  admin          User?    @relation(fields: [adminId], references: [id])
+  queue          Queue?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Queue {
+  id          Int          @id @default(autoincrement())
+  clinicId    Int          @unique
+  clinic      Clinic       @relation(fields: [clinicId], references: [id])
+  status      String       @default("CLOSED") // OPEN, CLOSED, PAUSED
+  lastToken   Int          @default(0)
+  entries     QueueEntry[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model QueueEntry {
+  id          Int       @id @default(autoincrement())
+  queueId     Int
+  queue       Queue     @relation(fields: [queueId], references: [id])
+  userId      Int?      // New field to link to User
+  user        User?     @relation(fields: [userId], references: [id])
+  tokenNumber Int
+  patientName String
+  status      String    @default("WAITING") // WAITING, IN_PROGRESS, COMPLETED, SKIPPED
+  joinedAt    DateTime  @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+}
