@@ -52,7 +52,7 @@ export function Navbar() {
             ) : (
               <div className="flex items-center gap-6">
                 <Link 
-                  href="/patient-dashboard" 
+                  href={user?.role === 'staff' ? "/staff-management/dashboard" : "/patient-dashboard"} 
                   className="flex items-center gap-2 text-[#1A6B7C] font-semibold font-['Outfit']"
                 >
                   <LayoutDashboard size={18} />
@@ -62,7 +62,9 @@ export function Navbar() {
                 <div className="flex items-center gap-3 pl-6 border-l border-gray-200">
                   <div className="flex flex-col items-end">
                     <span className="text-sm font-medium text-[#1A1924]">{user?.name}</span>
-                    <span className="text-xs text-[#717182] capitalize">{user?.role}</span>
+                    {user?.role && !['ngo', 'volunteer'].includes(user.role.toLowerCase()) && (
+                      <span className="text-xs text-[#717182] capitalize">{user.role.toLowerCase()}</span>
+                    )}
                   </div>
                   <button 
                     onClick={logout}

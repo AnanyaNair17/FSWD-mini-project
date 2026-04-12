@@ -41,7 +41,13 @@ export const getQueueStatus = async (req: Request, res: Response): Promise<void>
 
     const waiting = queue.entries.filter(e => e.status === "WAITING");
     const inProgress = queue.entries.find(e => e.status === "IN_PROGRESS");
-    const completedToday = queue.entries.filter(e => e.status === "COMPLETED").length;
+    
+    // Only count patients completed TODAY (since midnight)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const completedToday = queue.entries.filter(e => 
+      e.status === "COMPLETED" && e.completedAt && new Date(e.completedAt) >= today
+    ).length;
 
     // Simple estimated wait time: 10 mins per waiting patient
     const estimatedWaitTime = waiting.length * 10;
@@ -67,9 +73,24 @@ export const updateQueueStatus = async (req: Request, res: Response): Promise<vo
     const { clinicId, status } = req.body;
     const queue = await prisma.queue.upsert({
       where: { clinicId: parseInt(clinicId) },
-      update: { status },
-      create: { clinicId: parseInt(clinicId), status }
+      update: { 
+        status,
+        ...(status === "CLOSED" ? { lastToken: 0 } : {})
+      },
+      create: { 
+        clinicId: parseInt(clinicId), 
+        status,
+        ...(status === "CLOSED" ? { lastToken: 0 } : {})
+      }
     });
+
+    // If closing, we should also clean up any WAITING or IN_PROGRESS entries for this queue
+    if (status === "CLOSED") {
+      await prisma.queueEntry.updateMany({
+        where: { queueId: queue.id, status: { in: ["WAITING", "IN_PROGRESS"] } },
+        data: { status: "SKIPPED" }
+      });
+    }
 
     res.json({ message: `Queue status updated to ${status}`, status: queue.status });
   } catch (error) {
@@ -196,7 +217,11 @@ export const getPatientStatus = async (req: any, res: Response): Promise<void> =
       include: {
         queue: {
           include: {
-            clinic: true
+            clinic: true,
+            entries: {
+              where: { status: { in: ["WAITING", "IN_PROGRESS"] } },
+              orderBy: { tokenNumber: "asc" }
+            }
           }
         }
       }
@@ -208,3 +233,97 @@ export const getPatientStatus = async (req: any, res: Response): Promise<void> =
     res.status(500).json({ error: "Failed to fetch patient status" });
   }
 };
+export const getPatientHistory = async (req: any, res: Response): Promise<void> => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      res.status(401).json({ error: "User not authenticated" });
+      return;
+    }
+
+    const history = await prisma.queueEntry.findMany({
+      where: {
+        userId: userId,
+        status: { in: ["COMPLETED", "SKIPPED"] }
+      },
+      orderBy: { completedAt: "desc" },
+      include: {
+        queue: {
+          include: {
+            clinic: true
+          }
+        }
+      }
+    });
+
+    res.json({ history });
+  } catch (error) {
+    console.error("Get patient history error:", error);
+    res.status(500).json({ error: "Failed to fetch patient history" });
+  }
+};
+
+export const getClinicHistory = async (req: any, res: Response): Promise<void> => {
+  try {
+    const { clinicId } = req.params;
+    const history = await prisma.queueEntry.findMany({
+      where: {
+        queue: { clinicId: parseInt(clinicId) },
+        status: { in: ["COMPLETED", "SKIPPED"] }
+      },
+      orderBy: { joinedAt: "desc" },
+      include: {
+        user: true
+      }
+    });
+
+    res.json({ history });
+  } catch (error) {
+    console.error("Get clinic history error:", error);
+    res.status(500).json({ error: "Failed to fetch clinic history" });
+  }
+};
+
+export const leaveQueue = async (req: any, res: Response): Promise<void> => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      res.status(401).json({ error: "User not authenticated" });
+      return;
+    }
+
+    const result = await prisma.queueEntry.updateMany({
+      where: {
+        userId: userId,
+        status: { in: ["WAITING", "IN_PROGRESS"] }
+      },
+      data: {
+        status: "SKIPPED"
+      }
+    });
+
+    if (result.count === 0) {
+      res.status(400).json({ error: "No active queue participation found" });
+      return;
+    }
+
+    res.json({ message: "Left queue successfully" });
+  } catch (error) {
+    console.error("Leave queue error:", error);
+    res.status(500).json({ error: "Failed to leave queue" });
+  }
+};
+
+export const deleteHistoryEntry = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    await prisma.queueEntry.delete({
+      where: { id: parseInt(id) }
+    });
+    res.json({ message: "History entry deleted successfully" });
+  } catch (error) {
+    console.error("Delete entry error:", error);
+    res.status(500).json({ error: "Failed to delete history entry" });
+  }
+};
+

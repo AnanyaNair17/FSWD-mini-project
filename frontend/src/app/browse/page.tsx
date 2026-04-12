@@ -48,14 +48,18 @@ export default function BrowsePage() {
 
   const areas = [
     { value: '', label: 'All Areas' },
-    ...Array.from(new Set(clinics.map(c => c.location)))
+    ...Array.from(new Set(clinics.map(c => c.location.trim())))
+      .filter(area => area !== '') // Remove empty strings from dynamic list
       .map(area => ({ value: area.toLowerCase(), label: area }))
+      .filter((v, i, a) => a.findIndex(t => t.value === v.value) === i)
   ];
 
   const specializations = [
     { value: '', label: 'All Specializations' },
-    ...Array.from(new Set(clinics.map(c => c.specialty)))
+    ...Array.from(new Set(clinics.map(c => c.specialty.trim())))
+      .filter(spec => spec !== '') // Remove empty strings from dynamic list
       .map(spec => ({ value: spec.toLowerCase(), label: spec }))
+      .filter((v, i, a) => a.findIndex(t => t.value === v.value) === i)
   ];
 
   const sortOptions = [
@@ -144,7 +148,7 @@ export default function BrowsePage() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {filteredClinics.map((clinic) => (
-              <ClinicCard key={clinic.id} {...clinic} />
+              <ClinicCard key={clinic.id || Math.random().toString()} {...clinic} />
             ))}
           </div>
         )}

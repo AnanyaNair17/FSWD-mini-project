@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '../../components/Button';
 import { toast } from 'sonner';
-import { Users, Timer, Hash, Play, Pause, XCircle, CheckCircle, SkipForward } from 'lucide-react';
+import { Users, Timer, Hash, Play, Pause, XCircle, CheckCircle, SkipForward, History } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 interface QueueStatus {
   status: 'OPEN' | 'CLOSED' | 'PAUSED';
@@ -19,7 +21,7 @@ interface QueueStatus {
 
 export default function StaffDashboard() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const { user, token, isAuthenticated, loading: authLoading } = useAuth();
   const [queueData, setQueueData] = useState<QueueStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -38,29 +40,31 @@ export default function StaffDashboard() {
   }, []);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) {
+    if (authLoading) return;
+
+    if (!isAuthenticated) {
       router.push('/staff-login');
       return;
     }
-    const parsedUser = JSON.parse(storedUser);
-    setUser(parsedUser);
 
-    if (parsedUser.clinicId) {
-      fetchQueueStatus(parsedUser.clinicId);
-      const interval = setInterval(() => fetchQueueStatus(parsedUser.clinicId), 5000);
+    if (user?.clinicId) {
+      fetchQueueStatus(user.clinicId);
+      const interval = setInterval(() => fetchQueueStatus(user.clinicId), 5000);
       return () => clearInterval(interval);
     } else {
       toast.error("No clinic associated with this account");
       setLoading(false);
     }
-  }, [router, fetchQueueStatus]);
+  }, [router, fetchQueueStatus, isAuthenticated, authLoading, user]);
 
   const handleQueueControl = async (newStatus: string) => {
     try {
       const response = await fetch('http://localhost:5000/api/queue/control', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ clinicId: user.clinicId, status: newStatus }),
       });
       if (!response.ok) throw new Error('Action failed');
@@ -75,7 +79,10 @@ export default function StaffDashboard() {
     try {
       const response = await fetch('http://localhost:5000/api/queue/next', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ clinicId: user.clinicId }),
       });
       const data = await response.json();
@@ -91,7 +98,10 @@ export default function StaffDashboard() {
     try {
       const response = await fetch(`http://localhost:5000/api/queue/entry/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ status }),
       });
       if (!response.ok) throw new Error('Action failed');
@@ -109,12 +119,15 @@ export default function StaffDashboard() {
     try {
       const response = await fetch('http://localhost:5000/api/queue/join', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ clinicId: user.clinicId, patientName: name }),
       });
       if (!response.ok) throw new Error('Failed to add patient');
       toast.success("Patient added to waitlist");
-      fetchQueueStatus(user.clinicId);
+      setTimeout(() => fetchQueueStatus(user.clinicId), 500); // Small delay to ensure DB consistency
     } catch (error) {
       toast.error("Error adding walk-in patient");
     }
@@ -138,6 +151,15 @@ export default function StaffDashboard() {
               {queueData?.status}
             </span>
           </div>
+          <Link href="/staff-management/history">
+            <Button
+              variant="outline"
+              className="h-10 px-4 flex items-center gap-2"
+            >
+              <History size={18} />
+              Visit History
+            </Button>
+          </Link>
           <Button
             variant="outline"
             className="h-10 px-4"
@@ -171,6 +193,27 @@ export default function StaffDashboard() {
                   <div className="text-center p-8 bg-[#F0F9FA] rounded-xl border border-[#CCF0F5]">
                     <div className="text-5xl font-['Outfit'] font-black text-[#1A6B7C] mb-2">#{queueData.activePatient.tokenNumber}</div>
                     <div className="text-xl font-semibold text-[#1A1924]">{queueData.activePatient.patientName}</div>
+                  </div>
+                  <div className="flex gap-2 mb-3">
+                    <Button
+                      variant="outline"
+                      className="flex-1 text-[#1A6B7C] border-[#1A6B7C]/20 hover:bg-[#1A6B7C]/5"
+                      onClick={() => {
+                        toast.info("Added 5 minutes to current session");
+                        // In a real app, this would update estimatedWaitTime in DB
+                      }}
+                    >
+                      + 5 Mins
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1 text-[#1A6B7C] border-[#1A6B7C]/20 hover:bg-[#1A6B7C]/5"
+                      onClick={() => {
+                        toast.info("Added 10 minutes to current session");
+                      }}
+                    >
+                      + 10 Mins
+                    </Button>
                   </div>
                   <div className="flex gap-3">
                     <Button

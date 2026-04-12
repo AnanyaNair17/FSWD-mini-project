@@ -48,7 +48,7 @@ export const registerClinic = async (req: Request, res: Response): Promise<void>
           password: hashedPassword,
           name: doctorName,
           email: `${username}@waitless.com`, // Placeholder email
-          role: "NGO"
+          role: "STAFF"
         }
       });
 
@@ -118,5 +118,55 @@ export const getAllClinics = async (req: Request, res: Response): Promise<void> 
   } catch (error: any) {
     console.error("Get all clinics error:", error.message);
     res.status(500).json({ error: "Failed to fetch clinics" });
+  }
+};
+export const getClinicById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const clinic = await prisma.clinic.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        queue: {
+          include: {
+            entries: {
+              where: { status: { in: ["WAITING", "IN_PROGRESS"] } },
+              orderBy: { tokenNumber: "asc" }
+            }
+          }
+        }
+      }
+    });
+
+    if (!clinic) {
+      res.status(404).json({ error: "Clinic not found" });
+      return;
+    }
+
+    // Transform to match frontend detail page shape
+    const result = {
+      id: String(clinic.id),
+      name: clinic.name,
+      doctor: clinic.doctorName,
+      specialty: clinic.specialization,
+      location: clinic.area,
+      rating: 4.8,
+      reviewCount: 124,
+      verified: true,
+      waiting: clinic.queue?.entries.filter(e => e.status === "WAITING").length || 0,
+      queueStatus: (clinic.queue?.status || "CLOSED").toLowerCase(),
+      workingDays: clinic.workingDays,
+      phone: clinic.phone,
+      liveQueue: clinic.queue?.entries.map(e => ({
+        tokenNumber: `#${e.tokenNumber}`,
+        patientName: e.patientName,
+        status: e.status === "IN_PROGRESS" ? "current" : "waiting",
+        estimatedTime: e.status === "IN_PROGRESS" ? "Now" : "15 mins"
+      })) || []
+    };
+
+    res.json(result);
+  } catch (error: any) {
+    console.error("Get clinic by ID error:", error.message);
+    res.status(500).json({ error: "Failed to fetch clinic details" });
   }
 };

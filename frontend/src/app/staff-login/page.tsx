@@ -6,9 +6,11 @@ import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { useAuth } from '../context/AuthContext';
 
 export default function StaffLoginPage() {
   const router = useRouter();
+  const { login: authLogin } = useAuth();
   const searchParams = useSearchParams();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -40,8 +42,7 @@ export default function StaffLoginPage() {
         throw new Error(data.error || 'Login failed');
       }
 
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      authLogin(data.token, data.user);
       
       toast.success("Login successful!");
       router.push('/staff-management/dashboard');
